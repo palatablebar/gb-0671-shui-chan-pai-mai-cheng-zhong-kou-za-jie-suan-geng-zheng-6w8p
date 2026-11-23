@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% macro recall_table(rows) %}
+<div class="scroll"><table class="ledger"><thead><tr>{% set cols=['ticket','batch_no','voyage_no','buyer_id','buyer_name','sold_kg','recalled_kg','remaining_kg','effective_version','fail_item','result','code','reason','evidence_lines'] %}{% for col in cols %}<th>{{ meta.labels.get(col,col) }}</th>{% endfor %}</tr></thead><tbody>{% for row in rows %}<tr class="result-{{ row.result }}">{% for col in cols %}<td tabindex="0" title="{{ row.get(col,'') }}" class="num">{{ row.get(col,'') }}</td>{% endfor %}</tr>{% else %}<tr><td>选择样例后运行。</td></tr>{% endfor %}</tbody></table></div>
+{% endmacro %}
+{% block content %}
+<div class="grid">
+  <section class="panel primary-panel">
+    <div class="panel__head"><h2>召回处置单 · {{ state.recall.order.order_no }}</h2><span>{{ view.rows|length }} 票 · {{ state.recall.order.status }}</span></div>
+    {{ recall_table(view.rows) }}
+    <div class="panel__bar">
+      <label>样例 <select id="dataset"><option value="dirty" {% if state.source=='dirty' %}selected{% endif %}>现场脏批</option><option value="clean" {% if state.source=='clean' %}selected{% endif %}>核验清批</option><option value="legacy" {% if state.source=='legacy' %}selected{% endif %}>旧编码批</option></select></label>
+      <label>票号 <input id="filter" placeholder="筛选票号"></label>
+      <label>结果 <select id="result-filter"><option value="">全部</option><option>召回</option><option>暂缓召回</option><option>免召回</option></select></label>
+    </div>
+  </section>
+  <div class="stack">
+    <section class="panel">
+      <div class="panel__head"><h2>处置单核对</h2><span>来源批 / 买家 / 生效版本</span></div>
+      <div class="seal mono">单据 {{ state.recall.order.order_no }}<br>证据指纹 {{ state.recall.raw_digest[:32] }}<br>状态 {{ state.recall.order.status }}<br>阻断 {{ state.recall.order.blocked }} 项</div>
+      <div class="order-kpis">
+        <div><small>召回票</small><b>{{ state.recall.order.recall_tickets }}</b></div>
+        <div><small>暂缓票</small><b>{{ state.recall.order.suspended_tickets }}</b></div>
+        <div><small>免召回票</small><b>{{ state.recall.order.released_tickets }}</b></div>
+        <div><small>待召回 kg</small><b>{{ state.recall.order.remaining_kg }}</b></div>
+      </div>
+      {% if state.publication %}
+      <div class="published">已发布 {{ state.publication.order_no }}<br><span class="mono">{{ state.publication.published_at }}</span></div>
+      {% else %}
+      <button id="publish" class="btn primary" data-id="{{ state.manifest.run_id }}" {% if state.recall.order.blocked %}disabled{% endif %}>发布处置单</button>
+      {% if state.recall.order.blocked %}<p class="hint">证据阻断未清，禁止发布；逐票暂缓不等于判安全。</p>{% endif %}
+      {% endif %}
+      <a class="btn" href="/api/export/{{ state.manifest.run_id }}">下载封存凭证</a>
+    </section>
+    <section class="panel">
+      <div class="panel__head"><h2>船次控制（先扣住再核清）</h2><span>{{ state.recall.voyage_controls|length }} 批</span></div>
+      <div class="scroll"><table class="ledger"><thead><tr><th>船次</th><th>来源批</th><th>生效版本</th><th>抽检结论</th><th>控制级别</th><th>控制动作</th></tr></thead><tbody>{% for c in state.recall.voyage_controls %}<tr class="level-{{ loop.cycle('a','b') }}">{% for col in ['voyage_no','batch_no','report_version','verdict','level','action'] %}<td tabindex="0" title="{{ c.get(col,'') }}" class="num">{{ c.get(col,'') }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+    </section>
+  </div>
+</div>
+<div class="grid">
+  <section class="panel">
+    <div class="panel__head"><h2>抽检更正链（生效版本凭证）</h2><span>{{ state.recall.report_audit|length }} 版</span></div>
+    <div class="scroll"><table class="ledger"><thead><tr><th>来源批</th><th>报告版本</th><th>替代版本</th><th>抽检结论</th><th>不合格项</th><th>抽检时间</th></tr></thead><tbody>{% for r in state.recall.report_audit %}<tr>{% for col in ['batch_no','report_version','replaces','verdict','fail_item','sampled_at'] %}<td tabindex="0" title="{{ r.get(col,'') }}" class="num">{{ r.get(col,'') }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+    {% if state.recall.report_conflicts %}<div class="conflicts">报告断链/陈旧分支：{{ state.recall.report_conflicts }}</div>{% endif %}
+  </section>
+  <section class="panel">
+    <div class="panel__head"><h2>召回证据隔离</h2><span>{{ state.recall.quarantine|length }} 行（原始证据保留不丢）</span></div>
+    <div class="scroll"><table class="ledger"><thead><tr><th>证据类</th><th>行号</th><th>编号</th><th>原因码</th><th>原因</th></tr></thead><tbody>{% for q in state.recall.quarantine %}<tr>{% for col in ['kind','line','id','code','detail'] %}<td tabindex="0" title="{{ q.get(col,'') }}" class="num">{{ q.get(col,'') }}</td>{% endfor %}</tr>{% else %}<tr><td>无隔离证据。</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+</div>
+{% endblock %}

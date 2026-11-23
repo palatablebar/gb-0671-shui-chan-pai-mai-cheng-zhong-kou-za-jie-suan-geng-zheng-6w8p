@@ -10,7 +10,8 @@
     "扣杂竞价",
     "更正裁决",
     "应付对账",
-    "结算归档"
+    "结算归档",
+    "召回处置"
   ],
   "rule": "双次称重先配对，再按品类扣杂；更正只能替代指定版本，禁止重复支付",
   "lane": "L1",
@@ -29,7 +30,8 @@
     "auction",
     "correction",
     "reconcile",
-    "archive"
+    "archive",
+    "recall"
   ],
   "labels": {
     "id": "记录号",
@@ -63,6 +65,24 @@
     "repeated_header": "重复表头",
     "row_balanced": "行守恒",
     "money_balanced": "金额守恒",
-    "blocked": "阻断项"
+    "blocked": "阻断项",
+    "batch_no": "来源批",
+    "voyage_no": "船次",
+    "buyer_id": "买家编号",
+    "buyer_name": "买家",
+    "sold_kg": "成交 kg",
+    "recalled_kg": "已召回 kg",
+    "remaining_kg": "待召回 kg",
+    "effective_version": "生效版本",
+    "fail_item": "不合格项",
+    "result": "处置结果",
+    "verdict": "抽检结论",
+    "report_version": "报告版本",
+    "trace_status": "去向状态",
+    "level": "控制级别",
+    "action": "控制动作",
+    "sampled_at": "抽检时间",
+    "sold_at": "成交时间",
+    "traced_at": "核清时间"
   }
 }

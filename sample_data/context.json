@@ -6,7 +6,8 @@
     "auction",
     "correction",
     "reconcile",
-    "archive"
+    "archive",
+    "recall"
   ],
   "market": "东港水产",
   "currency": "CNY",
